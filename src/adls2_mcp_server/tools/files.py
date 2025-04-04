@@ -25,6 +25,13 @@ class FileExistsResponse:
     exists: bool
     error: str = ""
 
+@dataclass
+class FileRenameResponse:
+    source: str
+    destination: str
+    success: bool
+    error: str = ""
+
 def register_file_tools(mcp):
     """Register file-related MCP tools."""
 
@@ -132,6 +139,49 @@ def register_file_tools(mcp):
             response = FileExistsResponse(
                 path=file_path,
                 exists=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="rename_file",
+        description="Rename/move a file within the specified filesystem"
+    )
+    async def rename_file(filesystem: str, source_path: str, destination_path: str) -> Dict[str, str]:
+        """Rename/move a file within the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            source_path: Current path of the file relative to filesystem root
+            destination_path: New path for the file relative to filesystem root
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        if mcp.client.read_only:
+            response = FileRenameResponse(
+                source=source_path,
+                destination=destination_path,
+                success=False,
+                error="Cannot rename file in read-only mode"
+            )
+            return json.dumps(response.__dict__)
+
+        try:
+            success = await mcp.client.rename_file(filesystem, source_path, destination_path)
+            response = FileRenameResponse(
+                source=source_path,
+                destination=destination_path,
+                success=success,
+                error="" if success else "Failed to rename file"
+            )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error renaming file {source_path} to {destination_path}: {e}")
+            response = FileRenameResponse(
+                source=source_path,
+                destination=destination_path,
+                success=False,
                 error=str(e)
             )
             return json.dumps(response.__dict__)

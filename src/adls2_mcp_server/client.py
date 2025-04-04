@@ -299,3 +299,28 @@ class ADLS2Client:
         except Exception as e:
             logger.debug(f"File {file_path} does not exist in filesystem {filesystem}: {e}")
             return False
+
+    async def rename_file(self, filesystem: str, source_path: str, destination_path: str) -> bool:
+        """Rename/move a file within the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            source_path: Current path of the file relative to filesystem root
+            destination_path: New path for the file relative to filesystem root
+            
+        Returns:
+            bool: True if file was renamed successfully, False otherwise
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(source_path)
+            
+            # Construct new name with filesystem prefix as required by Azure SDK
+            new_name = f"{file_system_client.file_system_name}/{destination_path}"
+            
+            # Rename the file
+            file_client.rename_file(new_name)
+            return True
+        except Exception as e:
+            logger.error(f"Error renaming file {source_path} to {destination_path}: {e}")
+            return False
