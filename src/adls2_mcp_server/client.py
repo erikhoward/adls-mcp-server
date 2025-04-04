@@ -2,6 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import List, Optional
+from pathlib import Path
 
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeServiceClient
@@ -44,11 +45,13 @@ class ADLS2Client:
 
         # Initialize the client
         self.client = self._create_client()
+        self._read_only = self._config.read_only
+        self.upload_root = os.getenv("UPLOAD_ROOT", "./uploads")
 
     @property
     def read_only(self) -> bool:
         """Whether the client is in read-only mode."""
-        return self._config.read_only
+        return self._read_only
     
     @property
     def config(self) -> ADLS2Config:
@@ -195,3 +198,83 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error getting paths for directory {directory}: {e}")
             return []
+
+    async def upload_file(self, upload_file: str, filesystem: str, destination: str) -> bool:
+        """Upload a file to ADLS2.
+        
+        Args:
+            upload_file: Path to the file to upload (relative to UPLOAD_ROOT)
+            filesystem: Name of the filesystem
+            destination: Destination path in ADLS2
+            
+        Returns:
+            bool: True if file was uploaded successfully, False otherwise
+            
+        Raises:
+            Exception: If there is an error uploading the file
+        """
+        try:
+            # Construct full source path
+            source_path = Path(self.upload_root) / upload_file
+            
+            # Verify file exists and is within upload_root
+            if not source_path.exists():
+                logger.error(f"Source file does not exist: {source_path}")
+                return False
+                
+            if not str(source_path.absolute()).startswith(str(Path(self.upload_root).absolute())):
+                logger.error(f"Source file must be within UPLOAD_ROOT: {self.upload_root}")
+                return False
+
+            # Get file system client and create file client
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(destination)
+
+            # Upload the file
+            with open(source_path, "rb") as file:
+                file_client.upload_data(file.read(), overwrite=True)
+
+            return True
+        except Exception as e:
+            logger.error(f"Error uploading file {upload_file} to {destination}: {e}")
+            return False
+
+    async def download_file(self, filesystem: str, source: str, download_path: str) -> bool:
+        """Download a file from ADLS2.
+        
+        Args:
+            filesystem: Name of the filesystem
+            source: Source path in ADLS2
+            download_path: Path where to save the file (relative to UPLOAD_ROOT)
+            
+        Returns:
+            bool: True if file was downloaded successfully, False otherwise
+            
+        Raises:
+            Exception: If there is an error downloading the file
+        """
+        try:
+            # Construct full destination path
+            dest_path = Path(self.upload_root) / download_path
+            
+            # Create parent directories if they don't exist
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Verify destination path is within upload_root
+            if not str(dest_path.absolute()).startswith(str(Path(self.upload_root).absolute())):
+                logger.error(f"Destination path must be within UPLOAD_ROOT: {self.upload_root}")
+                return False
+
+            # Get file system client and file client
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(source)
+
+            # Download the file
+            download = file_client.download_file()
+            with open(dest_path, "wb") as file:
+                file.write(download.readall())
+
+            return True
+        except Exception as e:
+            logger.error(f"Error downloading file {source} to {download_path}: {e}")
+            return False
