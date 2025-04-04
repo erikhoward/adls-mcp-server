@@ -1,7 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pathlib import Path
 
 from azure.identity import DefaultAzureCredential
@@ -324,3 +324,38 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error renaming file {source_path} to {destination_path}: {e}")
             return False
+
+    async def get_file_properties(self, filesystem: str, file_path: str) -> Optional[Dict[str, str]]:
+        """Get properties of a file in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            Dict containing file properties or None if file doesn't exist or error occurs
+            Properties include:
+            - name: File name
+            - size: File size in bytes
+            - creation_time: When the file was created
+            - last_modified: When the file was last modified
+            - content_type: MIME type of the file
+            - etag: Entity tag for the file
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(file_path)
+            
+            properties = file_client.get_file_properties()
+            
+            return {
+                "name": file_path,
+                "size": str(properties.size),
+                "creation_time": properties.creation_time.isoformat() if properties.creation_time else "",
+                "last_modified": properties.last_modified.isoformat() if properties.last_modified else "",
+                "content_type": properties.content_settings.content_type if properties.content_settings else "",
+                "etag": properties.etag if properties.etag else ""
+            }
+        except Exception as e:
+            logger.error(f"Error getting properties for file {file_path}: {e}")
+            return None

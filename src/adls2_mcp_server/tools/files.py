@@ -32,6 +32,13 @@ class FileRenameResponse:
     success: bool
     error: str = ""
 
+@dataclass
+class FilePropertiesResponse:
+    path: str
+    properties: Dict[str, str]
+    success: bool
+    error: str = ""
+
 def register_file_tools(mcp):
     """Register file-related MCP tools."""
 
@@ -181,6 +188,47 @@ def register_file_tools(mcp):
             response = FileRenameResponse(
                 source=source_path,
                 destination=destination_path,
+                success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="get_file_properties",
+        description="Get properties of a file in the specified filesystem"
+    )
+    async def get_file_properties(filesystem: str, file_path: str) -> Dict[str, str]:
+        """Get properties of a file in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            Dict containing the file properties and operation status
+        """
+        try:
+            properties = await mcp.client.get_file_properties(filesystem, file_path)
+            if properties is not None:
+                response = FilePropertiesResponse(
+                    path=file_path,
+                    properties=properties,
+                    success=True,
+                    error=""
+                )
+            else:
+                response = FilePropertiesResponse(
+                    path=file_path,
+                    properties={},
+                    success=False,
+                    error="Failed to get file properties"
+                )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error getting properties for file {file_path}: {e}")
+            response = FilePropertiesResponse(
+                path=file_path,
+                properties={},
                 success=False,
                 error=str(e)
             )
