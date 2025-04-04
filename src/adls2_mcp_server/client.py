@@ -111,3 +111,87 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error deleting filesystem {name}: {e}")
             return False
+
+    async def create_directory(self, filesystem: str, directory: str) -> bool:
+        """Create a new directory in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            directory: Path of the directory to create
+            
+        Returns:
+            bool: True if directory was created successfully, False otherwise
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            directory_client = file_system_client.create_directory(directory)
+            return True
+        except Exception as e:
+            logger.error(f"Error creating directory {directory}: {e}")
+            return False
+
+    async def delete_directory(self, filesystem: str, directory: str) -> bool:
+        """Delete a directory from the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            directory: Path of the directory to delete
+            
+        Returns:
+            bool: True if directory was deleted successfully, False otherwise
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            directory_client = file_system_client.get_directory_client(directory)
+            directory_client.delete_directory()
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting directory {directory}: {e}")
+            return False
+
+    async def rename_directory(self, filesystem: str, source_path: str, destination_path: str) -> bool:
+        """Rename/move a directory within the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            source_path: Current path of the directory
+            destination_path: New path for the directory
+            
+        Returns:
+            bool: True if directory was renamed successfully, False otherwise
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            directory_client = file_system_client.get_directory_client(source_path)
+            new_name = f"{file_system_client.file_system_name}/{destination_path}"
+            directory_client.rename_directory(new_name)
+            return True
+        except Exception as e:
+            logger.error(f"Error renaming directory {source_path} to {destination_path}: {e}")
+            return False
+
+    async def directory_get_paths(self, filesystem: str, directory: str = "/", recursive: bool = True) -> List[str]:
+        """Get files and directories under the specified path.
+        
+        Args:
+            filesystem: Name of the filesystem
+            directory: Path of the directory to list. Defaults to "/".
+            recursive: If True, list paths recursively. Defaults to True.
+            
+        Returns:
+            List[str]: List of file and directory under the path
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            directory_client = file_system_client.get_directory_client(directory)
+            
+            paths = []
+            paths_iter = directory_client.get_paths(recursive=recursive)
+            
+            for path in paths_iter:
+                paths.append(path.name)
+                
+            return paths
+        except Exception as e:
+            logger.error(f"Error getting paths for directory {directory}: {e}")
+            return []
