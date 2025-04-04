@@ -91,3 +91,23 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error listing filesystems: {e}")
             return []
+    
+    async def delete_filesystem(self, name: str) -> bool:
+        """Delete a filesystem from the storage account.
+        
+        Args:
+            name: Name of the filesystem to delete
+            
+        Returns:
+            bool: True if filesystem was deleted successfully, False otherwise
+            
+        Raises:
+            Exception: If there is an error deleting the filesystem
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(name)
+            file_system_client.delete_file_system()
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting filesystem {name}: {e}")
+            return False
