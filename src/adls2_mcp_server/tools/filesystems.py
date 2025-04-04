@@ -8,8 +8,10 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 @dataclass
-class FilesystemData:
+class FilesystemListResponse:
+    success: bool
     filesystems: List[str] = field(default_factory=list)
+    error: str = ""
 
 @dataclass
 class CreateFilesystemResponse:
@@ -26,16 +28,31 @@ class DeleteFilesystemResponse:
 def register_filesystem_tools(mcp):
     """Register filesystem related MCP tools."""
 
-    @mcp.resource("adls://filesystems", name="filesystems", description="List all filesystems in the storage account")
-    async def list_filesystems() -> List[str]:
-        """List all filesystems in the storage account."""
+    @mcp.tool(
+        name="list_filesystems",
+        description="List all filesystems in the storage account"
+    )
+    async def list_filesystems() -> Dict[str, str]:
+        """List all filesystems in the storage account.
+        
+        Returns:
+            Dict containing the list of filesystems and operation status
+        """
         try:
             fs = await mcp.client.list_filesystems()
-            data = FilesystemData(filesystems=fs)
-            return json.dumps(data.__dict__)
+            response = FilesystemListResponse(
+                success=True,
+                filesystems=fs,
+                error=""
+            )
+            return json.dumps(response.__dict__)
         except Exception as e:
             logger.error(f"Error listing filesystems: {e}")
-            return []
+            response = FilesystemListResponse(
+                success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
 
     @mcp.tool(
         name="create_filesystem",
