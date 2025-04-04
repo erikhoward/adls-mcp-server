@@ -278,3 +278,24 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error downloading file {source} to {download_path}: {e}")
             return False
+
+    async def file_exists(self, filesystem: str, file_path: str) -> bool:
+        """Check if a file exists in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            bool: True if file exists, False otherwise
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(file_path)
+            
+            # Try to get file properties to check existence
+            file_client.get_file_properties()
+            return True
+        except Exception as e:
+            logger.debug(f"File {file_path} does not exist in filesystem {filesystem}: {e}")
+            return False

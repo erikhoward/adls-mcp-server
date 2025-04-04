@@ -19,6 +19,12 @@ class FileDownloadResponse:
     success: bool
     error: str = ""
 
+@dataclass
+class FileExistsResponse:
+    path: str
+    exists: bool
+    error: str = ""
+
 def register_file_tools(mcp):
     """Register file-related MCP tools."""
 
@@ -95,6 +101,37 @@ def register_file_tools(mcp):
                 source=source,
                 destination=download_path,
                 success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="file_exists",
+        description="Check if a file exists in the specified filesystem"
+    )
+    async def file_exists(filesystem: str, file_path: str) -> Dict[str, str]:
+        """Check if a file exists in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            Dict containing the result of the operation
+        """
+        try:
+            exists = await mcp.client.file_exists(filesystem, file_path)
+            response = FileExistsResponse(
+                path=file_path,
+                exists=exists,
+                error=""
+            )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error checking file existence {file_path}: {e}")
+            response = FileExistsResponse(
+                path=file_path,
+                exists=False,
                 error=str(e)
             )
             return json.dumps(response.__dict__)
