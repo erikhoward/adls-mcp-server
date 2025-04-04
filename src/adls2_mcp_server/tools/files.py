@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Union
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,19 @@ class FileRenameResponse:
 class FilePropertiesResponse:
     path: str
     properties: Dict[str, str]
+    success: bool
+    error: str = ""
+
+@dataclass
+class FileMetadataResponse:
+    path: str
+    metadata: Dict[str, str]
+    success: bool
+    error: str = ""
+
+@dataclass
+class SetFileMetadataResponse:
+    path: str
     success: bool
     error: str = ""
 
@@ -229,6 +242,132 @@ def register_file_tools(mcp):
             response = FilePropertiesResponse(
                 path=file_path,
                 properties={},
+                success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="get_file_metadata",
+        description="Get metadata of a file in the specified filesystem"
+    )
+    async def get_file_metadata(filesystem: str, file_path: str) -> Dict[str, str]:
+        """Get metadata of a file in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            Dict containing the file metadata and operation status
+        """
+        try:
+            metadata = await mcp.client.get_file_metadata(filesystem, file_path)
+            if metadata is not None:
+                response = FileMetadataResponse(
+                    path=file_path,
+                    metadata=metadata,
+                    success=True,
+                    error=""
+                )
+            else:
+                response = FileMetadataResponse(
+                    path=file_path,
+                    metadata={},
+                    success=False,
+                    error="Failed to get file metadata"
+                )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error getting metadata for file {file_path}: {e}")
+            response = FileMetadataResponse(
+                path=file_path,
+                metadata={},
+                success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="set_file_metadata",
+        description="Set a single metadata key-value pair for a file"
+    )
+    async def set_file_metadata(filesystem: str, file_path: str, key: str, value: str) -> Dict[str, str]:
+        """Set a single metadata key-value pair for a file.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            key: Metadata key
+            value: Metadata value
+            
+        Returns:
+            Dict containing the operation status
+        """
+        if mcp.client.read_only:
+            response = SetFileMetadataResponse(
+                path=file_path,
+                success=False,
+                error="Cannot set metadata in read-only mode"
+            )
+            return json.dumps(response.__dict__)
+
+        try:
+            success = await mcp.client.set_file_metadata(filesystem, file_path, key, value)
+            response = SetFileMetadataResponse(
+                path=file_path,
+                success=success,
+                error="" if success else "Failed to set file metadata"
+            )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error setting metadata for file {file_path}: {e}")
+            response = SetFileMetadataResponse(
+                path=file_path,
+                success=False,
+                error=str(e)
+            )
+            return json.dumps(response.__dict__)
+
+    @mcp.tool(
+        name="set_file_metadata_json",
+        description="Set multiple metadata key-value pairs for a file using JSON"
+    )
+    async def set_file_metadata_json(filesystem: str, file_path: str, metadata_json: Union[str, Dict[str, str]]) -> Dict[str, str]:
+        """Set multiple metadata key-value pairs for a file using JSON.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            metadata_json: JSON string or dictionary containing metadata key-value pairs
+            
+        Returns:
+            Dict containing the operation status
+        """
+        if mcp.client.read_only:
+            response = SetFileMetadataResponse(
+                path=file_path,
+                success=False,
+                error="Cannot set metadata in read-only mode"
+            )
+            return json.dumps(response.__dict__)
+
+        try:
+            # Convert metadata_json to string if it's a dictionary
+            if isinstance(metadata_json, dict):
+                metadata_json = json.dumps(metadata_json)
+            
+            success = await mcp.client.set_file_metadata_json(filesystem, file_path, metadata_json)
+            response = SetFileMetadataResponse(
+                path=file_path,
+                success=success,
+                error="" if success else "Failed to set file metadata"
+            )
+            return json.dumps(response.__dict__)
+        except Exception as e:
+            logger.error(f"Error setting metadata for file {file_path}: {e}")
+            response = SetFileMetadataResponse(
+                path=file_path,
                 success=False,
                 error=str(e)
             )

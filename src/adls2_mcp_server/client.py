@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass
 from typing import List, Optional, Dict
 from pathlib import Path
+import json
 
 from azure.identity import DefaultAzureCredential
 from azure.storage.filedatalake import DataLakeServiceClient
@@ -359,3 +360,97 @@ class ADLS2Client:
         except Exception as e:
             logger.error(f"Error getting properties for file {file_path}: {e}")
             return None
+
+    async def get_file_metadata(self, filesystem: str, file_path: str) -> Optional[Dict[str, str]]:
+        """Get metadata of a file in the specified filesystem.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            
+        Returns:
+            Dict containing file metadata or None if file doesn't exist or error occurs
+        """
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(file_path)
+            
+            properties = file_client.get_file_properties()
+            return dict(properties.metadata) if properties.metadata else {}
+        except Exception as e:
+            logger.error(f"Error getting metadata for file {file_path}: {e}")
+            return None
+
+    async def set_file_metadata(self, filesystem: str, file_path: str, key: str, value: str) -> bool:
+        """Set a single metadata key-value pair for a file.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            key: Metadata key
+            value: Metadata value
+            
+        Returns:
+            bool: True if metadata was set successfully, False otherwise
+        """
+        if self.read_only:
+            return False
+
+        try:
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(file_path)
+            
+            # Get existing metadata
+            properties = file_client.get_file_properties()
+            metadata = dict(properties.metadata) if properties.metadata else {}
+            
+            # Update metadata
+            metadata[key] = value
+            
+            # Set metadata
+            file_client.set_metadata(metadata)
+            return True
+        except Exception as e:
+            logger.error(f"Error setting metadata for file {file_path}: {e}")
+            return False
+
+    async def set_file_metadata_json(self, filesystem: str, file_path: str, metadata_json: str) -> bool:
+        """Set multiple metadata key-value pairs for a file using JSON.
+        
+        Args:
+            filesystem: Name of the filesystem
+            file_path: Path to the file relative to filesystem root
+            metadata_json: JSON string containing metadata key-value pairs
+            
+        Returns:
+            bool: True if metadata was set successfully, False otherwise
+        """
+        if self.read_only:
+            return False
+
+        try:
+            # Parse JSON string to dict
+            new_metadata = json.loads(metadata_json)
+            if not isinstance(new_metadata, dict):
+                logger.error("Metadata JSON must be an object")
+                return False
+
+            file_system_client = self.client.get_file_system_client(filesystem)
+            file_client = file_system_client.get_file_client(file_path)
+            
+            # Get existing metadata
+            properties = file_client.get_file_properties()
+            metadata = dict(properties.metadata) if properties.metadata else {}
+            
+            # Update metadata with new values
+            metadata.update(new_metadata)
+            
+            # Set metadata
+            file_client.set_metadata(metadata)
+            return True
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON format for metadata: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error setting metadata for file {file_path}: {e}")
+            return False
