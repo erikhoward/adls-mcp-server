@@ -48,6 +48,7 @@ class ADLS2Client:
         self.client = self._create_client()
         self._read_only = self._config.read_only
         self.upload_root = os.getenv("UPLOAD_ROOT", "./uploads")
+        self.download_root = os.getenv("DOWNLOAD_ROOT", "./downloads")
 
     @property
     def read_only(self) -> bool:
@@ -246,7 +247,7 @@ class ADLS2Client:
         Args:
             filesystem: Name of the filesystem
             source: Source path in ADLS2
-            download_path: Path where to save the file (relative to UPLOAD_ROOT)
+            download_path: Path where to save the file (relative to DOWNLOAD_ROOT)
             
         Returns:
             bool: True if file was downloaded successfully, False otherwise
@@ -256,14 +257,14 @@ class ADLS2Client:
         """
         try:
             # Construct full destination path
-            dest_path = Path(self.upload_root) / download_path
+            dest_path = Path(self.download_root) / download_path
             
             # Create parent directories if they don't exist
             dest_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Verify destination path is within upload_root
-            if not str(dest_path.absolute()).startswith(str(Path(self.upload_root).absolute())):
-                logger.error(f"Destination path must be within UPLOAD_ROOT: {self.upload_root}")
+            # Verify destination path is within download_root
+            if not str(dest_path.absolute()).startswith(str(Path(self.download_root).absolute())):
+                logger.error(f"Destination path must be within DOWNLOAD_ROOT: {self.download_root}")
                 return False
 
             # Get file system client and file client
