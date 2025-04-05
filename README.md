@@ -6,10 +6,11 @@ A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage
 ## Setup 🛠️
 
 ### Installation 📦
+
 Requires Python 3.13 or higher.
 
 ```bash
-# Use pip or uv (recommen) adls2-mcp-server
+# Use pip or uv (recommended) adls2-mcp-server
 uv pip install adls2-mcp-server
 ```
 
