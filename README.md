@@ -1,6 +1,7 @@
 # ADLS2 MCP Server 🚀
 
 ![License](https://img.shields.io/github/license/erikhoward/adls-mcp-server)
+
 A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage Gen2. This service provides a standardized interface for interacting with ADLS2 storage, enabling file operations through MCP tools.
 
 ## Setup 🛠️
