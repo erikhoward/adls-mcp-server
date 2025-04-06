@@ -49,7 +49,7 @@ jobs:
       id-token: write
 
     environment:
-      name: pypi
+      name: release
 
     steps:
       - name: Retrieve release distributions
