@@ -1,6 +1,6 @@
 [project]
 name = "adls2-mcp-server"
-version = "0.1.2"
+version = "0.1.3"
 description = "Azure Data Lake Storage Gen2 Model Context Protocol (MCP) service"
 authors = [
     { name = "Erik Howard", email = "erikhoward@pm.me" },
