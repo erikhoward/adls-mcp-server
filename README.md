@@ -1,8 +1,8 @@
 # ADLS2 MCP Server 🚀
 
-![License](https://img.shields.io/github/license/erikhoward/adls-mcp-server)
-
 A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage Gen2. This service provides a standardized interface for interacting with ADLS2 storage, enabling file operations through MCP tools.
+
+[![License](https://img.shields.io/github/license/erikhoward/adls-mcp-server)](https://opensource.org/licenses/MIT) [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/) [![uv](https://img.shields.io/badge/uv-package%20manager-blueviolet)](https://docs.astral.sh/uv/) [![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://github.com/modelcontextprotocol/spec)
 
 ## Setup 🛠️
 
@@ -10,29 +10,62 @@ A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage
 
 Requires Python 3.13 or higher.
 
+Install the package using `uv`:
+
 ```bash
-# Use pip or uv (recommended) adls2-mcp-server
 uv pip install adls2-mcp-server
 ```
 
-### Configuration ⚙️
+### MCP Configuration ⚙️
 
-1. Copy `.env.example` to `.env`
-2. Configure the following environment variables:
+### Claude Desktop Configuration
 
-```bash
-AZURE_STORAGE_ACCOUNT_KEY=your_azure_adls2_storage_key (optional)
-DOWNLOAD_ROOT=/path/to/download/folder
-UPLOAD_ROOT=/path/to/upload/folder
-READ_ONLY_MODE=True
-LOG_LEVEL=INFO
+1 - Edit Claude Desktop Configuration:
+
+Open `claude_desktop_config.json` and add the following configuration.
+
+On MacOs, the file is located here:
+`~/Library/Application Support/Claude Desktop/claude_desktop_config.json`.
+
+On Windows, the file is located here:
+`%APPDATA%\Claude Desktop\claude_desktop_config.json`.
+
+```json
+{
+    "mcpServers": {
+        "adls2": {
+            "command": "adls2-mcp-server",
+            "env": {
+                "LOG_LEVEL": "DEBUG",
+                "UPLOAD_ROOT": "/path/to/store/uploads",
+                "DOWNLOAD_ROOT": "/path/to/store/downloads",
+                "AZURE_STORAGE_ACCOUNT_NAME": "your-azure-adls2-storage-account-name",
+                "READ_ONLY_MODE": "false"
+            }
+        }
+    }
+}
 ```
+
+The following is a table of available environment configuration variables:
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `LOG_LEVEL` | Logging level | `INFO` |
+| `UPLOAD_ROOT` | Root directory for file uploads | `./uploads` |
+| `DOWNLOAD_ROOT` | Root directory for file downloads | `./downloads` |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Azure ADLS2 storage account name | `None` |
+| `AZURE_STORAGE_ACCOUNT_KEY` | Azure ADLS2 storage account key (optional) | `None` |
+| `READ_ONLY_MODE` | Whether the server should operate in read-only mode | `true` |
+
 
 If `AZURE_STORAGE_ACCOUNT_KEY` is not set, the server will attempt to authenticate using Azure CLI credentials. Ensure you have logged in with Azure CLI before running the server:
 
 ```bash
 az login
 ```
+
+2 - Restart Claude Desktop.
 
 ### Available Tools 🔧
 
@@ -101,6 +134,56 @@ cp .env.example .env
 ```
 
 Edit .env with your settings.
+
+```bash
+AZURE_STORAGE_ACCOUNT_NAME=your_azure_adls2_storage_account_name
+AZURE_STORAGE_ACCOUNT_KEY=your_azure_adls2_storage_key (optional)
+DOWNLOAD_ROOT=/path/to/download/folder
+UPLOAD_ROOT=/path/to/upload/folder
+READ_ONLY_MODE=True
+LOG_LEVEL=INFO
+```
+
+If `AZURE_STORAGE_ACCOUNT_KEY` is not set, the server will attempt to authenticate using Azure CLI credentials. Ensure you have logged in with Azure CLI before running the server:
+
+```bash
+az login
+```
+
+5 - Claude Desktop Configuration
+
+Open `claude_desktop_config.json` and add the following configuration.
+
+On MacOs, the file is located here:
+`~/Library/Application Support/Claude Desktop/claude_desktop_config.json`.
+
+On Windows, the file is located here:
+`%APPDATA%\Claude Desktop\claude_desktop_config.json`.
+
+```json
+{
+    "mcpServers": {
+        "adls2": {
+            "command": "uv",
+            "args": [
+                "--directory",
+                "/path/to/adls2-mcp-server/repo",
+                "run",
+                "adls2-mcp-server"
+            ],
+            "env": {
+                "LOG_LEVEL": "DEBUG",
+                "UPLOAD_ROOT": "/path/to/store/uploads",
+                "DOWNLOAD_ROOT": "/path/to/store/downloads",
+                "AZURE_STORAGE_ACCOUNT_NAME": "your-azure-adls2-storage-account-name",
+                "READ_ONLY_MODE": "false"
+            }
+        }
+    }
+}
+```
+
+6 - Restart Claude Desktop.
 
 ## Contributions 🤝
 
