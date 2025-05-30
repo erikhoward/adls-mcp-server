@@ -123,8 +123,7 @@ Windows:
 3 - Install dependencies:
 
 ```bash
-
-uv pip install -e ".[dev]"
+pip install -e ".[dev]"
 ```
 
 4 - Copy and configure environment variables:
