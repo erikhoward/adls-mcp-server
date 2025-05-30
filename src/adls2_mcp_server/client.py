@@ -19,7 +19,7 @@ class ADLS2Config:
     storage_account_key: Optional[str] = None
 
     @classmethod
-    def from_env(cls) -> "ADLS2Client":
+    def from_env(cls) -> "ADLS2Config":
         """Create a client from environment variables."""
         load_dotenv()
 
