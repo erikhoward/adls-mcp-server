@@ -1,6 +1,6 @@
 import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Dict, List
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error="Cannot create directory in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.create_directory(filesystem, path)
@@ -55,7 +55,7 @@ def register_directory_tools(mcp):
                 success=success,
                 error="" if success else "Failed to create directory"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error creating directory {path}: {e}")
             response = DirectoryResponse(
@@ -63,7 +63,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="delete_directory",
@@ -85,7 +85,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error="Cannot delete directory in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.delete_directory(filesystem, path)
@@ -94,7 +94,7 @@ def register_directory_tools(mcp):
                 success=success,
                 error="" if success else "Failed to delete directory"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error deleting directory {path}: {e}")
             response = DirectoryResponse(
@@ -102,7 +102,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="rename_directory",
@@ -125,7 +125,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error="Cannot rename directory in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.rename_directory(filesystem, source_path, destination_path)
@@ -134,7 +134,7 @@ def register_directory_tools(mcp):
                 success=success,
                 error="" if success else "Failed to rename directory"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error renaming directory {source_path} to {destination_path}: {e}")
             response = DirectoryResponse(
@@ -142,7 +142,7 @@ def register_directory_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="directory_exists",
@@ -165,7 +165,7 @@ def register_directory_tools(mcp):
                 exists=exists,
                 error=""
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error checking directory existence {path}: {e}")
             response = DirectoryExistsResponse(
@@ -173,7 +173,7 @@ def register_directory_tools(mcp):
                 exists=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="directory_get_paths",
@@ -197,11 +197,11 @@ def register_directory_tools(mcp):
                 paths=paths,
                 error=""
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error getting paths for directory {directory_path}: {e}")
             response = DirectoryPathsResponse(
                 path=directory_path,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
