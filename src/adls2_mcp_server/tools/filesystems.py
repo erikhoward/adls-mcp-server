@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict
 
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -45,14 +45,14 @@ def register_filesystem_tools(mcp):
                 filesystems=fs,
                 error=""
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error listing filesystems: {e}")
             response = FilesystemListResponse(
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="create_filesystem",
@@ -73,7 +73,7 @@ def register_filesystem_tools(mcp):
                 success=False,
                 error="Cannot create filesystem in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.create_container(name)
@@ -82,7 +82,7 @@ def register_filesystem_tools(mcp):
                 success=success,
                 error="" if success else "Failed to create filesystem"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error creating filesystem {name}: {e}")
             response = CreateFilesystemResponse(
@@ -90,7 +90,7 @@ def register_filesystem_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="delete_filesystem",
@@ -111,7 +111,7 @@ def register_filesystem_tools(mcp):
                 success=False,
                 error="Cannot delete filesystem in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.delete_filesystem(name)
@@ -120,7 +120,7 @@ def register_filesystem_tools(mcp):
                 success=success,
                 error="" if success else "Failed to delete filesystem"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error deleting filesystem {name}: {e}")
             response = DeleteFilesystemResponse(
@@ -128,4 +128,4 @@ def register_filesystem_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)

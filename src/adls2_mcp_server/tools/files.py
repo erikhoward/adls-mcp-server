@@ -1,10 +1,12 @@
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Dict, Union
 
 logger = logging.getLogger(__name__)
 
+
+# Data class used to prevent the init inbuilt function and less boilerplate 
 @dataclass
 class FileResponse:
     source: str
@@ -77,7 +79,8 @@ def register_file_tools(mcp):
                 success=False,
                 error="Cannot upload file in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            # TODO: add comment remove the json.dumps because we are returning a dict but no need for json because mcp serializes itself to json
+            return asdict(response)
 
         try:
             success = await mcp.client.upload_file(upload_file, filesystem, destination)
@@ -87,7 +90,7 @@ def register_file_tools(mcp):
                 success=success,
                 error="" if success else "Failed to upload file"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error uploading file {upload_file} to {destination}: {e}")
             response = FileResponse(
@@ -96,7 +99,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="download_file",
@@ -121,7 +124,7 @@ def register_file_tools(mcp):
                 success=success,
                 error="" if success else "Failed to download file"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error downloading file {source} to {download_path}: {e}")
             response = FileDownloadResponse(
@@ -130,7 +133,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="file_exists",
@@ -153,7 +156,7 @@ def register_file_tools(mcp):
                 exists=exists,
                 error=""
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error checking file existence {file_path}: {e}")
             response = FileExistsResponse(
@@ -161,7 +164,7 @@ def register_file_tools(mcp):
                 exists=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="rename_file",
@@ -185,7 +188,7 @@ def register_file_tools(mcp):
                 success=False,
                 error="Cannot rename file in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.rename_file(filesystem, source_path, destination_path)
@@ -195,7 +198,7 @@ def register_file_tools(mcp):
                 success=success,
                 error="" if success else "Failed to rename file"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error renaming file {source_path} to {destination_path}: {e}")
             response = FileRenameResponse(
@@ -204,7 +207,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="get_file_properties",
@@ -236,7 +239,7 @@ def register_file_tools(mcp):
                     success=False,
                     error="Failed to get file properties"
                 )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error getting properties for file {file_path}: {e}")
             response = FilePropertiesResponse(
@@ -245,7 +248,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="get_file_metadata",
@@ -277,7 +280,7 @@ def register_file_tools(mcp):
                     success=False,
                     error="Failed to get file metadata"
                 )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error getting metadata for file {file_path}: {e}")
             response = FileMetadataResponse(
@@ -286,7 +289,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="set_file_metadata",
@@ -310,7 +313,7 @@ def register_file_tools(mcp):
                 success=False,
                 error="Cannot set metadata in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             success = await mcp.client.set_file_metadata(filesystem, file_path, key, value)
@@ -319,7 +322,7 @@ def register_file_tools(mcp):
                 success=success,
                 error="" if success else "Failed to set file metadata"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error setting metadata for file {file_path}: {e}")
             response = SetFileMetadataResponse(
@@ -327,7 +330,7 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
     @mcp.tool(
         name="set_file_metadata_json",
@@ -350,7 +353,7 @@ def register_file_tools(mcp):
                 success=False,
                 error="Cannot set metadata in read-only mode"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
 
         try:
             # Convert metadata_json to string if it's a dictionary
@@ -363,7 +366,7 @@ def register_file_tools(mcp):
                 success=success,
                 error="" if success else "Failed to set file metadata"
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
         except Exception as e:
             logger.error(f"Error setting metadata for file {file_path}: {e}")
             response = SetFileMetadataResponse(
@@ -371,4 +374,4 @@ def register_file_tools(mcp):
                 success=False,
                 error=str(e)
             )
-            return json.dumps(response.__dict__)
+            return asdict(response)
