@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/erikhoward-adls-mcp-server-badge.png)](https://mseep.ai/app/erikhoward-adls-mcp-server)
+
 # ADLS2 MCP Server 🚀
 
 A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage Gen2. This service provides a standardized interface for interacting with ADLS2 storage, enabling file operations through MCP tools.
