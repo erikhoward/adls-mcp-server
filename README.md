@@ -2,6 +2,7 @@
 
 A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage Gen2. This service provides a standardized interface for interacting with ADLS2 storage, enabling file operations through MCP tools.
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/erikhoward/adls-mcp-server)](https://archestra.ai/mcp-catalog/erikhoward__adls-mcp-server)
 [![License](https://img.shields.io/github/license/erikhoward/adls-mcp-server)](https://opensource.org/licenses/MIT) [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/) [![uv](https://img.shields.io/badge/uv-package%20manager-blueviolet)](https://docs.astral.sh/uv/) [![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://github.com/modelcontextprotocol/spec)
 
 ## Setup 🛠️
