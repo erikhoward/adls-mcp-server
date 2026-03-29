@@ -4,6 +4,10 @@ A Model Context Protocol (MCP) server implementation for Azure Data Lake Storage
 
 [![License](https://img.shields.io/github/license/erikhoward/adls-mcp-server)](https://opensource.org/licenses/MIT) [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/) [![uv](https://img.shields.io/badge/uv-package%20manager-blueviolet)](https://docs.astral.sh/uv/) [![MCP](https://img.shields.io/badge/MCP-compatible-green.svg)](https://github.com/modelcontextprotocol/spec)
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/erikhoward-adls-mcp-server).
+
 ## Setup 🛠️
 
 ### Installation 📦
